@@ -1,9 +1,10 @@
-----------------------------------------------------------------------------------
--- company: 	 Rogerson Aircraft
--- engineer: 	 Gerardo Rodriguez
--- module name:  rotator
--- project name: fusion
-----------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Company:  Rogerson Aircraft
+-- Engineer: Gerardo Rodriguez
+-- Module:   Rotator
+-- Project:  Fusion
+------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -30,7 +31,8 @@ entity rotator is
 		o_mpmc_rnw                : out std_logic;
 		i_mpmc_addr_ack           : in  std_logic;
 		o_mpmc_addr_req           : out std_logic := '0';
-		o_mpmc_addr               : out std_logic_vector(31 downto 0) := (others => '0')
+		o_mpmc_addr               : out std_logic_vector(31 downto 0) 
+                                  := (others => '0')
 	);
 end rotator;
 
@@ -58,11 +60,20 @@ architecture behavioral of rotator is
 	constant c_quad_width : std_logic_vector(7 downto 0) := x"20";
 	constant c_quad_height : std_logic_vector(15 downto 0) := x"8000";
 	
-	type t_addr_req is (s_idle_req, s_rd_addr_req, s_wr_addr_req, s_wait_one_cycle);
+	type t_addr_req is (
+        s_idle_req, s_rd_addr_req, s_wr_addr_req, s_wait_one_cycle
+    );
 	signal state_addr_req : t_addr_req := s_idle_req;
 
-	type t_rd_mem is (s_check_mpmc_init_done, s_addr_req, s_addr_ack, s_check_mpmc_rdfifo_empty, s_rd_pop, s_check_rd_burst_count_max, s_idle);
---	type t_rd_mem is (s_check_mpmc_init_done, s_addr_req, s_check_mpmc_rdfifo_empty, s_rd_pop, s_check_rd_burst_count_max, s_idle);
+	type t_rd_mem is (
+        s_check_mpmc_init_done, s_addr_req, s_addr_ack, 
+        s_check_mpmc_rdfifo_empty, s_rd_pop, s_check_rd_burst_count_max, 
+        s_idle
+    );
+--	type t_rd_mem is (
+--      s_check_mpmc_init_done, s_addr_req, s_check_mpmc_rdfifo_empty, 
+--      s_rd_pop, s_check_rd_burst_count_max, s_idle
+--  );
 	signal state_rd_mem : t_rd_mem := s_check_mpmc_init_done;
 	signal my_rd_addr_req, my_rd_addr_ack : std_logic := '0';
 	signal rd_burst_count, rd_pop_count : integer := 0;
@@ -83,12 +94,15 @@ architecture behavioral of rotator is
 	signal y_offset : std_logic_vector(23 downto 0) := (others => '0');
 	signal wr_y_offset : std_logic_vector(23 downto 0) := (others => '0');
 
-	type t_wr_mem is (s_check_mpmc_init_done, s_idle, s_wait_one_cycle, s_prep, s_wr_push, s_addr_ack, s_check_wrfifo_empty, s_check_wr_burst_count_max);
+	type t_wr_mem is (
+        s_check_mpmc_init_done, s_idle, s_wait_one_cycle, s_prep, s_wr_push,
+        s_addr_ack, s_check_wrfifo_empty, s_check_wr_burst_count_max
+    );
 	signal state_wr_mem : t_wr_mem := s_check_mpmc_init_done;
-	signal my_wr_addr_req, my_wr_addr_ack                          : std_logic                     := '0';
-	signal wr_push_count                        : integer                       := 1;
-	signal wr_burst_count                       : integer                       := 0;
-	signal wr_mem_done, wr_quad_done, wr_quad_done_ack : boolean                       := false;
+	signal my_wr_addr_req, my_wr_addr_ack : std_logic := '0';
+	signal wr_push_count : integer := 1;
+	signal wr_burst_count : integer := 0;
+	signal wr_mem_done, wr_quad_done, wr_quad_done_ack : boolean := false;
 
 	-- note:
 	-- for 16-bit color =>  |15|14|13|12|11|10|09|08|07|06|04|03|02|01|00| 
@@ -99,19 +113,24 @@ architecture behavioral of rotator is
 	signal blue  : std_logic_vector(15 downto 0) := x"03e0";
 	signal rgbr  : std_logic_vector(63 downto 0);
 	
-	signal pix_array_wr, pix_array_rd, pix_array_empty, pix_array_full, pix_array_rst, pix_array_rst_ack : std_logic := '0';
+	signal pix_array_wr, pix_array_rd, pix_array_empty, pix_array_full, 
+        pix_array_rst, pix_array_rst_ack : std_logic := '0';
 	signal rd_rst, wr_rst : std_logic := '0';
 	
--- This signal was needed only for testbenches so that it can be enabled at the same time "o_mpmc_addr_req" is enabled but raised for a few more clock cycles.
--- Otherwise, I could not tell when "o_mpmc_addr_req" was asserted -- it does not show up on the testbench since it is deasserted in the same clock cycle.
--- Technically, it can be taken out when not evaluating with a testbench.
+-- This signal was needed only for testbenches so that it can be 
+-- enabled at the same time "o_mpmc_addr_req" is enabled but raised for
+-- a few more clock cycles. Otherwise, I could not tell when 
+-- "o_mpmc_addr_req" was asserted; it does not show up on the testbench
+-- since it is deasserted in the same clock cycle. Technically, it can
+-- be taken out when not evaluating with a testbench.
 	signal my_addr_req_hold : std_logic := '0';
 	
 begin
 
 	rgbr <= red & green & blue & red; -- four pixels, one burst length
 
-	process_addr_req : process (i_clk, my_rd_addr_req, my_wr_addr_req, i_mpmc_addr_ack)
+	process_addr_req : process (i_clk, my_rd_addr_req, my_wr_addr_req, 
+                                i_mpmc_addr_ack)
 	begin
 		if rising_edge (i_clk) then
 			case state_addr_req is
@@ -153,7 +172,8 @@ begin
 						state_addr_req  <= s_wait_one_cycle;
 					end if;
 			
-			-- needed to wait one more cycle for the "my_xx_addr_ack" signals to be read from the processes listening to them
+			-- needed to wait one more cycle for the "my_xx_addr_ack"
+            -- signals to be read from the processes listening to them
 				when s_wait_one_cycle =>
 					state_addr_req <= s_idle_req;
 					
@@ -164,7 +184,9 @@ begin
 		end if;
 	end process process_addr_req;
 
-	process_rd_mem : process (i_clk, i_mpmc_init_done, my_rd_addr_ack, i_mpmc_rdfifo_empty, rd_pop_count, rd_burst_count, rd_quad_done_ack, wr_quad_done)
+	process_rd_mem : process (i_clk, i_mpmc_init_done, my_rd_addr_ack, 
+                              i_mpmc_rdfifo_empty, rd_pop_count, 
+                              rd_burst_count, rd_quad_done_ack, wr_quad_done)
 	begin
 		if rising_edge (i_clk) then
 			case state_rd_mem is
@@ -205,6 +227,7 @@ begin
 					end if;
 				
 -- have to look at testbench for how to replace ">=" to "="
+
 				when s_rd_pop =>
 					rd_pop_count <= rd_pop_count + 1;
 					pix_array_wr <= '1';
@@ -259,21 +282,22 @@ begin
 
 	rd_addr <= rd_addr_base & (rd_y + rd_x + rd_y_offset); 
 --	wr_addr <= wr_addr_base & (wr_y + wr_x + wr_y_offset); -- no rotation
-	wr_addr <= wr_addr_base & (wr_y - wr_x - x"260");         -- cw
---	wr_addr <= wr_addr_base & (wr_x + wr_y);                  -- ccw
---	wr_addr <= wr_addr_base & (wr_x + wr_y - y_offset);       -- vertical 180
+	wr_addr <= wr_addr_base & (wr_y - wr_x - x"260");      -- cw
+--	wr_addr <= wr_addr_base & (wr_x + wr_y);               -- ccw
+--	wr_addr <= wr_addr_base & (wr_x + wr_y - y_offset);    -- vertical 180
 
-	process_addr_gen : process (i_clk, rd_mem_done, rd_y, rd_x, rd_y_offset, wr_mem_done, burst_count, wr_x, wr_y_offset)
+	process_addr_gen : process (i_clk, rd_mem_done, rd_y, rd_x, rd_y_offset, 
+                                wr_mem_done, burst_count, wr_x, wr_y_offset)
 	begin
 		if rising_edge (i_clk) then
 			case state_addr_gen is
 			
 				when s_rst =>
-					rd_frame_end         <= false;
-					rd_x              <= (others => '0');
-					rd_y              <= (others => '0');
-					rd_y_offset      <= (others => '0');
-					burst_count         <= 1;
+					rd_frame_end   <= false;
+					rd_x           <= (others => '0');
+					rd_y           <= (others => '0');
+					rd_y_offset    <= (others => '0');
+					burst_count    <= 1;
 					state_addr_gen <= s_gen;
 				-- no rotation
 --					wr_x              <= (others => '0');
@@ -402,7 +426,9 @@ begin
 	end process process_addr_gen;
 
 	o_mpmc_wrfifo_be <= "11111111";
-	process_wr_mem : process (i_clk, i_mpmc_init_done, i_mpmc_wrfifo_empty, wr_push_count, my_wr_addr_ack, wr_quad_done, wr_quad_done_ack, rd_quad_done)
+	process_wr_mem : process (i_clk, i_mpmc_init_done, i_mpmc_wrfifo_empty, 
+                              wr_push_count, my_wr_addr_ack, wr_quad_done, 
+                              wr_quad_done_ack, rd_quad_done)
 	begin
 		if rising_edge (i_clk) then
 			case state_wr_mem is
@@ -439,7 +465,10 @@ begin
 					state_wr_mem   <= s_wr_push; 
 				
 -- could probably merge "s_wr_push" and "s_addr_ack"
--- "s_addr_ack" is still looking at "my_wr_addr_ack", even though "my_wr_addr_req" was asserted and deasserted a couple clock cycles ago
+-- "s_addr_ack" is still looking at "my_wr_addr_ack", even though 
+-- "my_wr_addr_req" was asserted and deasserted a couple clock cycles 
+-- ago
+
 				when s_wr_push =>
 				--	pix_array_rd <= '0'; -- edit 1, removed
 					wr_push_count <= wr_push_count + 1;	
