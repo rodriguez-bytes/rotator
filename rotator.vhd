@@ -375,44 +375,40 @@ begin
               end if;
             end if;
 
-          -- ccw
---						wr_y      <= wr_y - x"800";
---						burst_count <= burst_count + 1;
---						if burst_count = 16 then
---							burst_count <= 1;
---							if rd_quad_row_end = true then
---								rd_quad_row_end <= false;
---								if rd_frame_end = true then
---									state_addr_gen <= s_rst;
---								else 
---									wr_y             <= x"00178000";
---									wr_x             <= wr_x + x"20";
---								end if;
---							end if;
---						end if;
+            -- ccw
+--          wr_y        <= wr_y - x"800";
+--          burst_count <= burst_count + 1;
+--          if burst_count = 16 then
+--            burst_count <= 1;
+--            if rd_quad_row_end = true then
+--              rd_quad_row_end <= false;
+--              if rd_frame_end = true then
+--                state_addr_gen <= s_rst;
+--              else 
+--                wr_y <= x"00178000";
+--                wr_x <= wr_x + x"20";
+--              end if;
+--            end if;
+--          end if;
 
-          -- vertical 180
---					--	wr_y             <= wr_y - x"800";
---						wr_y             <= wr_y + x"800";
---						burst_count        <= burst_count + 1;
---						if burst_count = 16 then
---							burst_count <= 1;
---							wr_x      <= wr_x - x"20";
---						--	wr_y      <= x"00178000";
---							wr_y      <= wr_y - x"7800";
---							if rd_quad_row_end = true then
---						--	if wr_x = x"00000000" then
---								rd_quad_row_end     <= false;
---								wr_x             <= x"000007c0";
---								y_offset         <= y_offset + x"8000"; 
---								if rd_frame_end = true then 
---							--	if y_offset >= x"e8800" then 
---									state_addr_gen <= s_rst;
---								else state_addr_gen <= s_gen;
---								end if;
---							else state_addr_gen <= s_gen;
---							end if;
---						end if;
+            -- vertical 180
+--          wr_y        <= wr_y + x"800";
+--          burst_count <= burst_count + 1;
+--          if burst_count = 16 then
+--            burst_count <= 1;
+--            wr_x        <= wr_x - x"20";
+--            wr_y        <= wr_y - x"7800";
+--            if rd_quad_row_end = true then
+--              rd_quad_row_end <= false;
+--              wr_x            <= x"000007c0";
+--              y_offset        <= y_offset + x"8000"; 
+--              if rd_frame_end = true then 
+--                state_addr_gen <= s_rst;
+--              else state_addr_gen <= s_gen;
+--              end if;
+--            else state_addr_gen <= s_gen;
+--            end if;
+--          end if;
 
           end if;
         
