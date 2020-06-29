@@ -294,40 +294,40 @@ begin
           burst_count    <= 1;
           state_addr_gen <= s_gen;
 
-       -- no rotation
---				wr_x        <= (others => '0');
---				wr_y        <= (others => '0');
---				wr_y_offset <= (others => '0');
+          -- no rotation
+--        wr_x        <= (others => '0');
+--        wr_y        <= (others => '0');
+--        wr_y_offset <= (others => '0');
 
-       -- clockwise
+          -- clockwise
           wr_x <= x"000020"; 
           wr_y <= x"000800"; 
 
-       -- counter clockwise
---				wr_x <= x"000000";
---				wr_y <= x"178000";		
+          -- counter clockwise
+--        wr_x <= x"000000";
+--        wr_y <= x"178000";		
 
-       -- vertical 180
---				wr_x     <= x"0007c0";
---				wr_y     <= x"178000"; 
---				y_offset <= x"000000";
+          -- vertical 180
+--        wr_x     <= x"0007c0";
+--        wr_y     <= x"178000"; 
+--        y_offset <= x"000000";
         
         when s_gen =>
 
           if rd_mem_done = true then
-            rd_y      <= rd_y + x"800";
+            rd_y        <= rd_y + x"800";
             burst_count <= burst_count + 1;
             if burst_count = 16 then
-              rd_x      <= rd_x + x"20"; 
+              rd_x        <= rd_x + x"20"; 
               burst_count <= 1;
-              rd_y      <= (others => '0');
+              rd_y        <= (others => '0');
               if rd_x = x"5e0" then
                 rd_quad_row_end <= true;
-                rd_x         <= (others => '0');
-                rd_y_offset <= rd_y_offset + x"8000"; 
+                rd_x            <= (others => '0');
+                rd_y_offset     <= rd_y_offset + x"8000"; 
                 if rd_y_offset = x"f0000" then 
-                  rd_frame_end <= true;
-                --	state_addr_gen <= s_rst; -- uncomment for correct code
+                  rd_frame_end   <= true;
+                	state_addr_gen <= s_rst;
                 else state_addr_gen <= s_gen;
                 end if;
               else state_addr_gen <= s_gen;
@@ -338,28 +338,29 @@ begin
           end if;
           
           if wr_mem_done = true then
-          -- no rotatation
---						wr_y      <= wr_y + x"800"; 
---						burst_count <= burst_count + 1;
---						if burst_count = 16 then -- 
---							burst_count <= 1; 
---							wr_x      <= wr_x + x"20"; 
---							wr_y      <= (others => '0');
---							if rd_quad_row_end = true then 
---								rd_quad_row_end <= false;
---								wr_x           <= (others => '0');
---								wr_y_offset <= wr_y_offset + x"8000"; 
---								if rd_frame_end = true then 
---									state_addr_gen <= s_rst;
---								else state_addr_gen <= s_gen;
---								end if;
---							else state_addr_gen <= s_gen;
---							end if;
---						else state_addr_gen <= s_gen;
---						end if;
+
+            -- no rotatation
+--          wr_y        <= wr_y + x"800"; 
+--          burst_count <= burst_count + 1;
+--          if burst_count = 16 then
+--            burst_count <= 1; 
+--            wr_x        <= wr_x + x"20"; 
+--            wr_y        <= (others => '0');
+--            if rd_quad_row_end = true then 
+--              rd_quad_row_end <= false;
+--              wr_x            <= (others => '0');
+--              wr_y_offset     <= wr_y_offset + x"8000"; 
+--              if rd_frame_end = true then 
+--                state_addr_gen <= s_rst;
+--              else state_addr_gen <= s_gen;
+--              end if;
+--            else state_addr_gen <= s_gen;
+--            end if;
+--          else state_addr_gen <= s_gen;
+--          end if;
 
           -- cw
-            wr_y      <= wr_y + x"800";
+            wr_y        <= wr_y + x"800";
             burst_count <= burst_count + 1;
             if burst_count = 16 then
               burst_count <= 1;
@@ -470,12 +471,11 @@ begin
 -- ago
 
         when s_wr_push =>
-        --	pix_array_rd <= '0'; -- edit 1, removed
           wr_push_count <= wr_push_count + 1;	
           if wr_push_count >= 1 then 
-            my_wr_addr_req <= '1'; -- asserted
+            my_wr_addr_req <= '1';
             if wr_push_count >= 2 then
-              my_wr_addr_req <= '0'; -- deasserted
+              my_wr_addr_req <= '0';
               if wr_push_count >= 4 then 
                 wr_push_count <= 1;	
                 o_mpmc_wr_push <= '0';
